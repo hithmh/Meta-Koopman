@@ -5,3 +5,4 @@ model.ckpt.*
 log/*
 __pycache__/*
 envs/__pycache__/*
+*.Identifier
