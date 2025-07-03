@@ -1,0 +1,7 @@
+*.png
+
+model.ckpt.*
+.idea/*
+log/*
+__pycache__/*
+envs/__pycache__/*
