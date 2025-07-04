@@ -2,11 +2,8 @@ import tensorflow as tf
 import os
 from variant import *
 import numpy as np
-import time
 import logger
 import matplotlib.pyplot as plt
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 
@@ -19,7 +16,6 @@ def get_distrubance_function(args, env, model):
             disturbance_step = model_step(args, env, model)
         else:
             disturbance_step = base_disturbance_step(args, env)
-        # disturbance_step = None
 
     return disturbance_step
 

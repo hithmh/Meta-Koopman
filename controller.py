@@ -1384,8 +1384,6 @@ class Adaptive_MPC_tanh(Adaptive_MPC):
         self.B_holder.value = self.B
         self.C_holder.value = self.C
 
-        # self.prob.solve(solver=SCS)
-        # self.prob.solve(solver=OSQP)
         try:
             self.prob.solve(solver=MOSEK)
             if self.prob.status != OPTIMAL and self.prob.status != OPTIMAL_INACCURATE:

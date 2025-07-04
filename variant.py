@@ -39,7 +39,7 @@ VARIANT = {
     'num_of_trials': 4,  # number of random seeds
     'eval_list': [
         #### Put the name of the trained models in log which you want to evaluate here
-        'Koopman_meta_deterministic_tanh',
+        'Koopman_meta_deterministic',
     ],
     'trials_for_eval': [str(i) for i in range(0, 1)],
 }
