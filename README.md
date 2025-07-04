@@ -13,17 +13,17 @@ conda activate meta-Koopman
 # Run the code
 
 Next is an example for training Meta Koopman in the Cartpole example:
+
 ```
-Run train\_meta.py
+Run train_meta.py
 
-After training is complete, run robustness\_eval.py
+After training is complete, run robustness_eval.py
 ```
 
-Results can be found in \\log\\cartpole\\Koopman_meta_deterministic directory.
+Results can be found in \\log\\cartpole\\Koopman\_meta\_deterministic directory.
 
 
 
-To try other systems and methods, revise 'env_name' and 'alg_name' in variant.py.
-After training is complete, include the name of alg directory, e.g. Koopman_meta_deterministic, in the 'eval_list'. Then run robustness\_eval.py.
-
+To try other systems and methods, revise 'env\_name' and 'alg\_name' in variant.py.
+After training is complete, include the name of alg directory, e.g. Koopman\_meta\_deterministic, in the 'eval\_list'. Then run robustness\_eval.py.
 
