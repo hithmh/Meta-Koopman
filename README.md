@@ -10,7 +10,7 @@ conda activate meta-Koopman
 
 
 
-# Run the code
+## Run the code
 
 Next is an example for training Meta Koopman in the Cartpole example:
 
