@@ -24,6 +24,6 @@ Results can be found in \\log\\cartpole\\Koopman\_meta\_deterministic directory.
 
 
 
-To try other systems and methods, revise 'env\_name' and 'alg\_name' in variant.py.
+To try other systems and methods, revise 'env\_name' and 'alg\_name' in variant.py. For DeSKO, use train.py to train the model.
 After training is complete, include the name of alg directory, e.g. Koopman\_meta\_deterministic, in the 'eval\_list'. Then run robustness\_eval.py.
 
