@@ -8,15 +8,15 @@ SEED = None
 
 VARIANT = {
     # Environment name
-    # 'env_name': 'cartpole_cost',
-    # 'env_name': 'oscillator',
-    'env_name': 'three_tank',
+    'env_name': 'cartpole_cost',
+    # 'env_name': 'oscillator', ## GRN example
+    # 'env_name': 'three_tank', ## Chemical Process example
 
     # training prams
-    # 'alg_name': 'Koopman_v10',
-    # 'alg_name': 'Koopman_v10_meta',
-    'alg_name': 'Koopman_meta_deterministic_tanh',
-    # 'alg_name': 'Koopman_meta_deterministic',
+    # 'alg_name': 'DeSKO',
+    # 'alg_name': 'DeSKO_meta',
+    # 'alg_name': 'Koopman_meta_deterministic_tanh', ## Meta Koopman with tanh normalization
+    'alg_name': 'Koopman_meta_deterministic', ## Meta Koopman
 
     #Description
     'additional_description': '',
@@ -38,6 +38,8 @@ VARIANT = {
     'evaluation_form': 'param_variation',
     'num_of_trials': 4,  # number of random seeds
     'eval_list': [
+        #### Put the name of the trained models in log which you want to evaluate here
+        'Koopman_meta_deterministic_tanh',
     ],
     'trials_for_eval': [str(i) for i in range(0, 1)],
 }
@@ -95,8 +97,8 @@ ENV_PARAMS = {
         'Q': np.diag([1., 1., 0.000, 1., 1., 0.000, 1, 1., 0.000]),
         'R': np.diag(0.001 * np.ones([3]))*1,
         'end_weight': 1.,
-        'control_horizon': 35,
-        'MPC_pred_horizon': 35,
+        'control_horizon': 16,
+        'MPC_pred_horizon': 16,
         'apply_state_constraints': False,
         'apply_action_constraints': True,
 
@@ -104,7 +106,7 @@ ENV_PARAMS = {
         # 'w_k_bound': 0,
         # 'v_k_bound': 0,
 
-        'lr_scaler': 0.8,
+        'lr_scaler': 0.02,
         'w_k_bound': 1e-8,
         'v_k_bound': 1e-8,
     },
@@ -182,9 +184,10 @@ ALG_PARAMS = {
         'learning_rate': 1e-4,
         'decay_rate': 0.95,
         'decay_steps': 5,
+        'std_scaler': 10,
 
         'activation': 'relu',
-        'encoder_struct': [256, 256],
+        'encoder_struct': [128, 128],
         'latent_dim': 128,
         'pred_horizon': 16,
         'alpha': .1,
@@ -202,11 +205,8 @@ ALG_PARAMS = {
         'start_of_trial': 0,
         'history_horizon': 0,
     },
-    'Koopman_v10': {
+    'DeSKO': {
         'controller_name': 'Robust_fast_dynamic_MPC',
-        'estimator_name': 'Luenberger',
-        # 'controller_name': 'Robust_fast_MPC',
-        # 'controller_name': 'Stochastic_MPC_with_motion_planning',    #for HalfCheetah environment
         'n_of_random_seeds': 1,
         'iter_of_data_collection': 3,
         'learning_rate': 1e-4,
@@ -226,6 +226,32 @@ ALG_PARAMS = {
         'batch_size': 128,
         'num_epochs': 400,       #400
         'total_data_size': 1e6, #40000
+        'further_collect_data_size': 1000,
+        'segment_of_test': 8,
+        'n_subseq': 220,  # number of subsequences to divide each sequence into
+        'store_last_n_paths': 10,  # number of trajectories for evaluation during training
+        'start_of_trial': 0,
+        'history_horizon': 0,
+    },
+    'DeSKO_meta': {
+        'controller_name': 'Robust_fast_dynamic_MPC',
+        'n_of_random_seeds': 1,
+        'iter_of_data_collection': 3,
+        'learning_rate': 1e-4,
+        'decay_rate': 0.9,
+        'decay_steps': 10,
+        'activation': 'relu',
+        # 'activation': 'elu',
+        'encoder_struct': [256, 256],
+        'latent_dim': 20,
+        'pred_horizon': 16,
+        'alpha': .1,
+        'target_entropy': -80.,
+        'l2_regularizer': 0.01,
+        'val_frac': 0.1,
+        'batch_size': 128,
+        'num_epochs': 400,  # 400
+        'total_data_size': 5e4,  # 40000
         'further_collect_data_size': 1000,
         'segment_of_test': 8,
         'n_subseq': 220,  # number of subsequences to divide each sequence into
@@ -292,228 +318,34 @@ def get_env_from_name(args):
         from envs.ENV_V1 import CartPoleEnv_adv as dreamer
         env = dreamer()
         env = env.unwrapped
-    elif name == 'cartpole_random':
-        from envs.ENV_V2 import CartPoleEnv_adv as dreamer
-        env = dreamer()
-        env = env.unwrapped
-    elif name == 'cartpole_observation_noise':
-        from envs.ENV_V3 import CartPoleEnv_adv as dreamer
-        env = dreamer()
-        env = env.unwrapped
-    elif name == 'cartpole_partial':
-        from envs.ENV_V4 import CartPoleEnv_adv as dreamer
-        env = dreamer()
-        env = env.unwrapped
-    elif name == 'turtle_v4':
-        from envs.gym_pybullet_mobilerobot_v4 import MobileRoboGymEnv as env
-        # from envs.ENV_V1 import CartPoleEnv_adv as dreamer
-        env = env(args['reference'])
-        # env = gym.make('DeskoCartpole-v0', des_v=args['reference'])
-        # env = dreamer()
-        env = env.unwrapped
-    elif name == 'turtle_v6':
-        from envs.gym_pybullet_mobilerobot_v6 import MobileRoboGymEnv as env
-        # from envs.ENV_V1 import CartPoleEnv_adv as dreamer
-        env = env(args['reference'])
-        # env = gym.make('DeskoCartpole-v0', des_v=args['reference'])
-        # env = dreamer()
-        env = env.unwrapped
-    elif name == 'trunk_arm':
-        from envs.trunk_arm import TrunkArm as dreamer
-        connect_to_real_system = False if args['import_saved_data'] else True
-        env = dreamer(connect_to_real_system, args['reference'])
-        env = env.unwrapped
-    elif name == 'trunk_armV2':
-        from envs.trunk_armV2 import TrunkArmV2 as dreamer
-        connect_to_real_system = False if args['import_saved_data'] else True
-        env = dreamer(connect_to_real_system, args['reference' ])
-        env = env.unwrapped
-    elif name == 'trunk_armV3':
-        from envs.trunk_armV3 import TrunkArmV3 as dreamer
-        connect_to_real_system = False if args['import_saved_data'] else True
-        env = dreamer(connect_to_real_system, args['reference'])
-        env = env.unwrapped
-    elif name == 'trunk_armV4':
-        from envs.trunk_armV4 import TrunkArmV4 as dreamer
-        connect_to_real_system = False if args['import_saved_data'] else True
-        env = dreamer(connect_to_real_system, args['reference'], args['MPC_pred_horizon'])
-        env = env.unwrapped
-    elif name == 'trunk_armV6':
-        from envs.trunk_armV6 import TrunkArmV6 as dreamer
-        connect_to_real_system = False if args['import_saved_data'] else True
-        env = dreamer(connect_to_real_system, args['reference'], args['MPC_pred_horizon'])
-        env = env.unwrapped
-    elif name == 'trunk_arm_sim':
-        from envs.trunk_arm_simulator import TrunkArmSimulator as dreamer
-        if 'reference' in args.keys():
-            env = dreamer(args['reference'])
-        else:
-            env = dreamer()
-        env = env.unwrapped
-    elif name == 'trunk_arm_sim_obs_noise':
-        from envs.trunk_arm_simulatorv_2 import TrunkArmSimulator as dreamer
-        if 'reference' in args.keys():
-            env = dreamer(args['reference'])
-        else:
-            env = dreamer()
-        env = env.unwrapped
+
     elif name == 'three_tank':
         from envs.three_tank import three_tank_system as dreamer
         env = dreamer(args['reference'])
-        env = env.unwrapped
-    elif name == 'three_tank_delay':
-        from envs.three_tank_delay import three_tank_system as dreamer
-        env = dreamer(args['reference'])
-        env = env.unwrapped
-    elif name == 'three_tank_partial':
-        from envs.three_tank_partial import three_tank_system as dreamer
-        env = dreamer(args['reference'])
-        env = env.unwrapped
-    elif name == 'three_tank_recycle_delay':
-        from envs.three_tank_recycle_delay import three_tank_system as dreamer
-        env = dreamer(args['reference'])
-        env = env.unwrapped
-    elif name == 'waste_water':
-        from envs.waste_water_system import waste_water_system as dreamer
-        env = dreamer(args['reference'])
-        env = env.unwrapped
-    elif name == 'linear_sys':
-        from envs.linear_env import linear_env as dreamer
-        env = dreamer()
-        env = env.unwrapped
-    elif name == 'Pendulum-v0':
-        from envs.pendulum import PendulumEnv as dreamer
-        env = dreamer()
         env = env.unwrapped
     elif name == 'oscillator':
         from envs.oscillator import oscillator as env
         env = env(args['reference'])
         env = env.unwrapped
-
-    elif name == 'oscillator_CME':
-        from envs.oscillator_cme import oscillator as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'oscillator_no_input':
-        from envs.oscillator_no_input import oscillator as env
-        env = env(args['reference'])
-        env = env.unwrapped
-    elif name == 'MJS1':
-        from envs.MJS1 import MJS as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'MJS2':
-        from envs.MJS2 import MJS as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'oscillator_complicated':
-        from envs.oscillator_complicated import oscillator as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'oscillator_complicated_partial':
-        from envs.oscillator_complicated import oscillator as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'oscillator_observation_noise':
-        from envs.oscillator_observation_noise import oscillator as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'oscillator_process_noise':
-        from envs.oscillator_process_noise import oscillator as env
-        env = env()
-        env = env.unwrapped
-    elif name == 'minitaur':
-        from envs.minitaur_env import minitaur_env as env
-        env = env(render=VARIANT['eval_render'])
-        env = env.unwrapped
-    elif name == 'HalfCheetahEnv_cost':
-        from envs.half_cheetah_cost import HalfCheetahEnv_cost as env
-        # from envs.ENV_V1 import CartPoleEnv_adv as dreamer
-        env = env(args['reference'])
-        # env = gym.make('DeskoCartpole-v0', des_v=args['reference'])
-        #env = dreamer()
-        env = env.unwrapped
-    elif name == 'HalfCheetahEnv_cost_observation_noise':
-        #from mujoco.half_cheetah import mujoco.HalfCheetahEnv as env
-        from envs.half_cheetah_cost_observation_noise import HalfCheetahEnv_cost as env
-        env = env(args['reference'])
-        #env = dreamer()
-        env = env.unwrapped
-    elif name == 'HalfCheetahEnv_cost_process_noise':
-        #from mujoco.half_cheetah import mujoco.HalfCheetahEnv as env
-        from envs.half_cheetah_cost import HalfCheetahEnv_cost as env
-        env = env(args['reference'])
-        #env = dreamer()
-        env = env.unwrapped
-    elif name == 'Humanoid_stand_up':
-        #from mujoco.half_cheetah import mujoco.HalfCheetahEnv as env
-        from envs.humanoidstandup import HumanoidStandupEnv as env
-        env = env()
-        #env = dreamer()
-        env = env.unwrapped
-    else:
-        env = gym.make(name)
-        env = env.unwrapped
-        if name == 'Quadrotorcons-v0':
-            if 'CPO' not in VARIANT['algorithm_name']:
-                env.modify_action_scale = False
-        if 'Fetch' in name or 'Hand' in name:
-            env.unwrapped.reward_type = 'dense'
     env.seed(SEED)
     return env
 
 
 def get_model(name):
-    if name == 'Koopman':
-        from base_koopman_operator import base_Koopman as build_func
-    elif name == 'Koopman_v2':
-        from koopman_operator_v2 import Koopman as build_func
-    elif name == 'Koopman_v5':
-        from koopman_operator_v5 import Koopman as build_func
-    elif name == 'Koopman_v10':
+    if name == 'DeSKO':
         from koopman_operator_V10 import Koopman as build_func
-    elif name == 'Koopman_v10_meta':
+    elif name == 'DeSKO_meta':
         from koopman_operator_V10_meta_train import Koopman as build_func
-
-    elif name == 'Koopman_v11':
-        from koopman_operator_v11 import Koopman as build_func
-    elif name == 'Koopman_v12':
-        from koopman_operator_v12 import Koopman as build_func
-    elif name == 'Koopman_v13':
-        from koopman_operator_v13 import Koopman as build_func
-    elif name == 'Koopman_v14':
-        from koopman_operator_v14 import Koopman as build_func
-
-    elif name == 'Koopman_v16':
-        from koopman_operator_v16 import Koopman as build_func
-    elif name == 'Koopman_v17':
-        from koopman_operator_V17 import Koopman as build_func
-    elif name == 'Koopman_v18':
-        from koopman_operator_v18 import Koopman as build_func
     elif name == 'Koopman_meta_deterministic':
         from koopman_operator_meta import Koopman as build_func
     elif name == 'Koopman_meta_deterministic_tanh':
         from koopman_operator_meta_tanh import Koopman as build_func
-    elif name == 'Koopman_meta':
-        from koopman_operator_meta_V2 import Koopman as build_func
-    elif name == 'Koopman_meta_v3':
-        from koopman_operator_meta_V3 import Koopman as build_func
-    elif name == 'Koopman_meta_v4':
-        from koopman_operator_meta_V4 import Koopman as build_func
-    elif name == 'Koopman_meta_v5':
-        from koopman_operator_meta_V5 import Koopman as build_func
-    elif name == 'Koopman_meta_v6':
-        from koopman_operator_meta_V6 import Koopman as build_func
-    elif name == 'Koopman_meta_VAE':
-        from koopman_operator_meta_V9 import Koopman as build_func
-    if name == 'MLP':
-        from MLP import MLP as build_func
     return build_func
 
 def get_replay_memory(name):
     if name == 'Koopman_meta_v3':
         rm = replay_memory_meta_simulator.ReplayMemoryWithPast
-    elif name == 'Koopman_v10_meta':
+    elif name == 'DeSKO_meta':
         rm = replay_memory_meta_simulator.ReplayMemoryForDeSKO
     elif name == 'Koopman_meta_deterministic_tanh':
         rm = replay_memory_meta_simulator.ReplayMemoryTanh
@@ -524,63 +356,15 @@ def get_replay_memory(name):
 
     return rm
 def get_controller(model, args):
-    if args['controller_name'] == 'MPC':
-        # from controller import MPC as build_func
-        # controller = build_func(model, args)
-        from real_time_controller_v2 import real_time_MPC as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'MPC_dynamic':
-        from real_time_controller_v2 import real_time_MPC_dynamic as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'MPC_with_motion_planning':
-        from controller import MPC_with_motion_planning as build_func
-        controller = build_func(model, args)
-    # elif args['controller_name'] == 'Robust_fast_MPC':
-    #     from real_time_controller import robust_MPC as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Time_varying_MPC':
-        from controller import Time_varying_MPC as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Robust_fast_MPC':
+    if args['controller_name'] == 'Robust_fast_MPC':
         from real_time_controller_v2 import robust_MPC as build_func
         controller = build_func(model, args)
     elif args['controller_name'] == 'Robust_fast_dynamic_MPC':
         from real_time_controller_v2 import robust_MPC_dynamic_tracking as build_func
         controller = build_func(model, args)
-    elif args['controller_name'] == 'Robust_fast_dynamic_MPC_partial_obs':
-        from real_time_controller_v2 import robust_MPC_dynamic_tracking_partial_obs as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Robust_fast_dynamic_MPC_with_jerk':
-        from real_time_controller_v2 import robust_MPC_dynamic_tracking_with_jerk_penalty as build_func
-        controller = build_func(model, args)
-
-    elif args['controller_name'] == 'Stochastic_MPC':
-        from controller import Stochastic_MPC as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_v2':
-        from controller import Stochastic_MPC_v2 as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_v3':
-        from controller import Stochastic_MPC_v3 as build_func
-        controller = build_func(model, args)
-
-    elif args['controller_name'] == 'Stochastic_MPC_with_observation':
-        from controller import Stochastic_MPC_with_observation as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_with_memory':
-        from controller import Stochastic_MPC_with_memory as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_with_memory_v2':
-        from controller import Stochastic_MPC_with_memory_v2 as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_with_observation_v2':
-        from controller import Stochastic_MPC_with_observation_v2 as build_func
-        controller = build_func(model, args)
     elif args['controller_name'] == 'Adaptive_MPC':
         from controller import Adaptive_MPC as build_func
         controller = build_func(model, args)
-    elif args['controller_name'] == 'osqp_Adaptive_MPC':
-        from osqp_controller import Adaptive_MPC as build_func
     elif args['controller_name'] == 'Adaptive_MPC_v2':
         from controller import Adaptive_MPC_v2 as build_func
         controller = build_func(model, args)
@@ -590,33 +374,10 @@ def get_controller(model, args):
     elif args['controller_name'] == 'Adaptive_MPC_tanh':
         from controller import Adaptive_MPC_tanh as build_func
         controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_with_observation_v3':
-        from controller import Stochastic_MPC_with_observation_v3 as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'Stochastic_MPC_with_motion_planning':
-        from controller import Stochastic_MPC_with_motion_planning as build_func
-        controller = build_func(model, args)
-    elif args['controller_name'] == 'CEM_MPC':
-        from CEM import CEM_MPC as build_func
-        controller = build_func(model, args)
     else:
         print('controller does not exist')
         raise NotImplementedError
     return controller
-
-def get_predictor(model, args):
-
-    if args['predictor_name'] == 'AdaptivePredictor':
-        from predictor import AdaptivePredictor as build_func
-        predictor = build_func(model, args)
-    elif args['predictor_name'] == 'StochasticAdaptivePredictor':
-        from predictor import StochasticAdaptivePredictor as build_func
-        predictor = build_func(model, args)
-    else:
-        print('predictor does not exist')
-        raise NotImplementedError
-
-    return predictor
 
 def store_hyperparameters(path, args):
     np.save(path + "/hyperparameters.npy", args)

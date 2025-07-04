@@ -934,26 +934,6 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
         constraints += [self.ref == xk]
         self.prob = Problem(Minimize(objective), constraints)
 
-    def _create_backup_prob(self, args):
-        objective = 0.
-        slack_variable = Variable((self.state_dim), nonneg=True)
-        g_k = self.mean_t[:, 0]
-        constraints = []
-        for k in range(self.pred_horizon):
-            # X_mean = vstack([reshape(self.mean[:, k], (self.latent_dim, 1)), reshape(self.ref, (self.state_dim, 1))])[:,
-            #          0]
-
-            k_u = k if k <= self.control_horizon - 1 else self.control_horizon - 1
-            delta_u = self.u[:, k_u] - self.u[:, k_u-1] if k_u > 0 else np.zeros((self.a_dim))
-            objective += quad_form(self.C_holder @ g_k - self.ref, self.Q) + quad_form(delta_u, self.R)
-            g_k = self.A_holder @ g_k + self.B_holder @ self.u[:, k_u]
-            if args['apply_action_constraints']:
-                constraints += [self.a_bound_low <= self.u[:, k_u],
-                                self.u[:, k_u] <= self.a_bound_high]
-
-        xk = self.C_holder @ g_k
-        objective += quad_form(xk - self.ref, self.Q) * self.end_weight
-        self.backup_prob = Problem(Minimize(objective), constraints)
 
     def update_model(self):
         x = np.array(self.states)[-1][:, np.newaxis]
@@ -962,19 +942,17 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
         u = np.array(self.actions)[-1][:, np.newaxis]
 
         alpha = 1
-        lr = (2-alpha) * np.min([1/(mu.T @ mu +u.T @ u), 1/(mu_.T @ mu_)])*self.lr_scaler
+        lr = (2 - alpha) * 1 / (mu.T @ mu + u.T @ u) * self.lr_scaler
 
-        lr1 = (2 - alpha) * 1 / (mu.T @ mu + u.T @ u) * self.lr_scaler
-        lr2 = (2 - alpha) * 1 / 1/(mu_.T @ mu_) * self.lr_scaler
 
         mu_hat = self.A @ mu + self.B @ u
         x_hat = self.C@(mu_)
         x_error = x - x_hat
         mu_error = mu_ - mu_hat
 
-        A = self.A + lr1 * (mu_error @ mu.T)
-        B = self.B + lr1 * (mu_error @ u.T)
-        C = self.C + lr2 * (x_error @ mu_.T)
+        A = self.A + lr * (mu_error @ mu.T)
+        B = self.B + lr * (mu_error @ u.T)
+        C = self.C + lr * (x_error @ mu_.T)
 
         return A, B, C
 
@@ -1019,6 +997,27 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
         self.actions = []
         self.mus = []
         self.t = 1
+
+    def _create_backup_prob(self, args):
+        objective = 0.
+        slack_variable = Variable((self.state_dim), nonneg=True)
+        g_k = self.mean_t[:, 0]
+        constraints = []
+        for k in range(self.pred_horizon):
+            # X_mean = vstack([reshape(self.mean[:, k], (self.latent_dim, 1)), reshape(self.ref, (self.state_dim, 1))])[:,
+            #          0]
+
+            k_u = k if k <= self.control_horizon - 1 else self.control_horizon - 1
+            delta_u = self.u[:, k_u] - self.u[:, k_u-1] if k_u > 0 else np.zeros((self.a_dim))
+            objective += quad_form(self.C_holder @ g_k - self.ref, self.Q) + quad_form(delta_u, self.R)
+            g_k = self.A_holder @ g_k + self.B_holder @ self.u[:, k_u]
+            if args['apply_action_constraints']:
+                constraints += [self.a_bound_low <= self.u[:, k_u],
+                                self.u[:, k_u] <= self.a_bound_high]
+
+        xk = self.C_holder @ g_k
+        objective += quad_form(xk - self.ref, self.Q) * self.end_weight
+        self.backup_prob = Problem(Minimize(objective), constraints)
 
 class Adaptive_MPC_v2(Adaptive_MPC):
 
@@ -1104,7 +1103,7 @@ class Adaptive_MPC_v2(Adaptive_MPC):
         v_k = sol.value(self.v_k)[: , np.newaxis]
 
         alpha = 1
-        lr = (2-alpha) * np.min([1/(mu.T @ mu +u.T @ u), 1/(mu_.T @ mu_)])*self.lr_scaler
+        (2-alpha) * 1/(mu.T @ mu +u.T @ u) * self.lr_scaler
 
         mu_hat = self.A @ mu + self.B @ u + w_k
         x_hat = self.C@(mu_) + v_k
@@ -1354,7 +1353,7 @@ class Adaptive_MPC_tanh(Adaptive_MPC):
         v_k = sol.value(self.v_k)[: , np.newaxis]
 
         alpha = 1
-        lr = (2-alpha) * np.min([1/(mu.T @ mu +u.T @ u), 1/(mu_.T @ mu_)])*self.lr_scaler
+        lr = (2-alpha) * 1/(mu.T @ mu +u.T @ u) * self.lr_scaler
 
         mu_hat = self.A @ mu + self.B @ u + w_k
         x_hat = self.C @ (mu_) + v_k
@@ -1387,9 +1386,13 @@ class Adaptive_MPC_tanh(Adaptive_MPC):
 
         # self.prob.solve(solver=SCS)
         # self.prob.solve(solver=OSQP)
-        self.prob.solve(solver=MOSEK)
-        if self.prob.status != OPTIMAL and self.prob.status != OPTIMAL_INACCURATE:
+        try:
+            self.prob.solve(solver=MOSEK)
+            if self.prob.status != OPTIMAL and self.prob.status != OPTIMAL_INACCURATE:
+                self.backup_prob.solve(solver=MOSEK, warm_start=False)
+        except cvxpy.error.SolverError:
             self.backup_prob.solve(solver=MOSEK, warm_start=False)
+
 
         u = self.u[:, 0].value
         self.last_u = u[:, np.newaxis]

@@ -46,6 +46,7 @@ class Koopman(base_Koopman):
         self.task_num = args['num_of_task']
 
         super(Koopman, self).__init__(args)
+        self.std_scaler = args['std_scaler'] if 'std_scaler' in args else 1
 
     def _create_place_holders(self, args):
         # list version
@@ -249,7 +250,7 @@ class Koopman(base_Koopman):
 
         # Find loss
         feed_out = self.val_loss
-        loss = self.sess.run(feed_out, feed_in)
+        loss = self.sess.run(feed_out, feed_in) * self.std_scaler
 
         return loss
 
@@ -265,7 +266,7 @@ class Koopman(base_Koopman):
 
         # Find loss
         feed_out = self.val_loss
-        loss = self.sess.run(feed_out, feed_in)
+        loss = self.sess.run(feed_out, feed_in) * self.std_scaler
 
         return loss
 

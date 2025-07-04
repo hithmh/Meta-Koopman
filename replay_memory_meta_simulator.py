@@ -858,7 +858,7 @@ class ReplayMemoryTanh(ReplayMemory):
         self.scale_u = []
 
         self.shift_x=np.mean(self.x[0][:self.n_batches_train[0]], axis=(0, 1))
-        self.scale_x=np.std(self.x[0][:self.n_batches_train[0]], axis=(0, 1)) * 10
+        self.scale_x=np.std(self.x[0][:self.n_batches_train[0]], axis=(0, 1)) * args['std_scaler']
         self.shift_u=np.mean(self.u[0][:self.n_batches_train[0]], axis=(0, 1))
         self.scale_u=np.std(self.u[0][:self.n_batches_train[0]], axis=(0, 1))
 
