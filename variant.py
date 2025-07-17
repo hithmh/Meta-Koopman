@@ -36,7 +36,7 @@ VARIANT = {
     'continue_data_collection': False,
     'collect_data_with_controller': False,
     'evaluation_form': 'param_variation',
-    'num_of_trials': 4,  # number of random seeds
+    'num_of_trials': 5,  # number of random seeds
     'eval_list': [
         #### Put the name of the trained models in log which you want to evaluate here
         'Koopman_meta_deterministic',
@@ -56,26 +56,23 @@ ENV_PARAMS = {
         'eval_render': False,
         'num_of_task': 10,     # number of import tasks (for meta training only)
 
-        ## DeSKO
+        # ### MPC params
         'reference': np.array([0, 0, 0, 0], dtype=np.float32),
-        'Q': np.diag([0.001, .000, 0.5, 0.1]) * 1,
+        'Q': np.diag([0.001, .000, 1, 0.2]) * 1,
         'R': np.diag([.01]),
 
-        ### MPC params
-        # 'reference': np.array([0, 0, 0, 0], dtype=np.float32),
-        # 'Q': np.diag([0.01, .001, 1., 0.1]) * 1,
-        # 'R': np.diag([.01]),
-        'end_weight': 10,
-        'control_horizon': 25,
+        'end_weight': 1,
+        'control_horizon': 16,
         'MPC_pred_horizon': 16,
 
         'apply_state_constraints': False,
         'apply_action_constraints': True,
 
-        # 'lr': 1e-5,
+
         'lr_scaler': 0.005,
         'w_k_bound': 1e-6,
         'v_k_bound': 1e-4,
+
     },
 
     'three_tank': {
@@ -86,12 +83,6 @@ ENV_PARAMS = {
         'eval_render': False,
         'num_of_task': 20,  # number of import tasks (for meta training only)
 
-        ### DeSKO params
-        # 'reference': np.array([0.1763, 0.6731, 480.3165, 0.1965, 0.6536, 472.7863, 0.0651, 0.6703, 474.8877],
-        #                       dtype=np.float32),
-        # 'Q': np.diag([1., 1., 0.000, 1., 1., 0.000, 1, 1., 0.000]),
-        # 'R': np.diag(0.00001 * np.ones([3])) * 1,
-
         # ### MeKO params
         'reference': np.array([0.1763, 0.6731, 480.3165, 0.1965, 0.6536, 472.7863, 0.0651, 0.6703, 474.8877], dtype=np.float32),
         'Q': np.diag([1., 1., 0.000, 1., 1., 0.000, 1, 1., 0.000]),
@@ -101,10 +92,6 @@ ENV_PARAMS = {
         'MPC_pred_horizon': 16,
         'apply_state_constraints': False,
         'apply_action_constraints': True,
-
-        # 'lr_scaler': 0.8,
-        # 'w_k_bound': 0,
-        # 'v_k_bound': 0,
 
         'lr_scaler': 0.02,
         'w_k_bound': 1e-8,
@@ -125,15 +112,9 @@ ENV_PARAMS = {
         'Q': np.diag([0., 0.,  0., 1., 0., 0.]),
         'R': np.diag(0.01*np.ones([3])),
         'end_weight': 10.,
-        'control_horizon': 10,
+        'control_horizon': 16,
         'MPC_pred_horizon': 16,
-        # ### MPC params
-        # 'reference': np.array([0, 0, 0, 6, 0, 0], dtype=np.float32),
-        # 'Q': np.diag([0., 0.,  0., 1., 0., 0.]),
-        # 'R': np.diag(0.01*np.ones([3])),
-        # 'end_weight': 10.,
-        # 'control_horizon': 10,
-        # 'MPC_pred_horizon': 30,
+
         'apply_state_constraints': False,
         'apply_action_constraints': True,
 
@@ -181,10 +162,10 @@ ALG_PARAMS = {
         'controller_name': 'Adaptive_MPC_tanh',
 
         'iter_of_data_collection': 3,
-        'learning_rate': 1e-4,
+        'learning_rate': 5e-5,
         'decay_rate': 0.95,
         'decay_steps': 5,
-        'std_scaler': 10,
+        'std_scaler': 5,
 
         'activation': 'relu',
         'encoder_struct': [128, 128],
@@ -196,7 +177,7 @@ ALG_PARAMS = {
         'val_frac': 0.1,
         'batch_size': 128,
         'num_epochs': 400,
-        'total_data_size': 1e5,
+        'total_data_size': 5e4,
         'further_collect_data_size': 1000,
 
         'segment_of_test': 8,
@@ -267,7 +248,7 @@ EVAL_PARAMS = {
 
     'param_variation': {
 
-        'num_of_paths': 10,   # number of path for evaluation
+        'num_of_paths': 1,   # number of path for evaluation
     },
 
     'impulse': {

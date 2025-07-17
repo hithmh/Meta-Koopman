@@ -981,8 +981,6 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
 
         u = self.u[:, 0].value
         self.last_u = u[:, np.newaxis]
-        # slack = self.slack_variable.value
-        # print(str(t2 - t1))
 
         self.actions.append(u)
         self.t += 1
@@ -1103,7 +1101,7 @@ class Adaptive_MPC_v2(Adaptive_MPC):
         v_k = sol.value(self.v_k)[: , np.newaxis]
 
         alpha = 1
-        (2-alpha) * 1/(mu.T @ mu +u.T @ u) * self.lr_scaler
+        lr = (2-alpha) * 1/(mu.T @ mu +u.T @ u) * self.lr_scaler
 
         mu_hat = self.A @ mu + self.B @ u + w_k
         x_hat = self.C@(mu_) + v_k
@@ -1126,16 +1124,10 @@ class Adaptive_MPC_v3(Adaptive_MPC_v2):
         self.A = np.mean(self.model.A_result, axis=0).T
         self.B = np.mean(self.model.B_result, axis=0).T
         self.C = np.mean(self.model.C_result, axis=0).T
-        # self.A = self.model.A_result[0].T
-        # self.B = self.model.B_result[0].T
-        # self.C = self.model.C_result[0].T
         self.u_zero = (np.zeros(self.args['act_dim'])-self.shift_u) / self.scale_u
 
         self._shift_and_scale_bounds(self.args)
         self.ref.value = self.reference
-        # self._set_LQR_controller()
-        # self._create_set_point_u_prob()
-        # self._get_set_point_u(self.reference)
         self._create_prob(self.args)
         self._create_gradient_prob()
         self._create_backup_prob(self.args)
@@ -1160,8 +1152,6 @@ class Adaptive_MPC_v3(Adaptive_MPC_v2):
 
         xk = self.C_holder @ g_k
         constraints += [self.ref == xk]
-        # constraints += [self.ref - slack_variable <= xk, xk <= self.ref + slack_variable]
-        # objective += quad_form(slack_variable, np.eye(self.state_dim)) * 1e3
         self.prob = Problem(Minimize(objective), constraints)
     def _create_backup_prob(self, args):
         objective = 0.
@@ -1202,14 +1192,16 @@ class Adaptive_MPC_v3(Adaptive_MPC_v2):
         self.B_holder.value = self.B
         self.C_holder.value = self.C
 
-        self.prob.solve(solver=MOSEK)
-        if self.prob.status != OPTIMAL and self.prob.status != OPTIMAL_INACCURATE:
+        try:
+            self.prob.solve(solver=MOSEK, warm_start=True)
+            if self.prob.status != OPTIMAL and self.prob.status != OPTIMAL_INACCURATE:
+                self.backup_prob.solve(solver=MOSEK, warm_start=False)
+        except cvxpy.error.SolverError:
             self.backup_prob.solve(solver=MOSEK, warm_start=False)
+        self.backup_prob.solve(solver=MOSEK, warm_start=False)
 
         u = self.u[:, 0].value
         self.last_u = u[:, np.newaxis]
-        # slack = self.slack_variable.value
-        # print(str(t2 - t1))
 
         self.actions.append(u)
         self.t += 1

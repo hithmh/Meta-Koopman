@@ -63,9 +63,9 @@ def visualize_predictions_meta_simulator_tanh(task_num, args, model, replay_memo
         pred_trajectory.extend(model.make_prediction(input, u[task_num][t-args['history_horizon']:t + args['pred_horizon'] - 1], task_num, args))
         furture_states.append([
             plot_x_tick[t:t + args['pred_horizon']],
-            np.tan(np.array(pred_trajectory))*replay_memory.scale_x + replay_memory.shift_x])
+            np.arctanh(np.array(pred_trajectory))*replay_memory.scale_x + replay_memory.shift_x])
         t += args['segment_of_test']
-    x = np.tan(x[task_num]) * replay_memory.scale_x + replay_memory.shift_x
+    x = np.arctanh(x[task_num]) * replay_memory.scale_x + replay_memory.shift_x
     plt.close()
     f, axs = plt.subplots(args['state_dim'] + args['act_dim'], sharex=True, figsize=(15, 15))
 
