@@ -248,7 +248,7 @@ EVAL_PARAMS = {
 
     'param_variation': {
 
-        'num_of_paths': 1,   # number of path for evaluation
+        'num_of_paths': 10,   # number of path for evaluation
     },
 
     'impulse': {
