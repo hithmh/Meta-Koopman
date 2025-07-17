@@ -19,7 +19,6 @@ Next is an example for training Meta Koopman in the Cartpole example:
 
 ```
 python3 train_meta.py
-
 ```
 After training is complete, run 
 ```
