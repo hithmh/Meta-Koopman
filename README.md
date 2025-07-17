@@ -18,11 +18,13 @@ Mosek requires a license, which can be obtained at https://www.mosek.com/product
 Next is an example for training Meta Koopman in the Cartpole example:
 
 ```
-Run train_meta.py
+python3 train_meta.py
 
-After training is complete, run robustness_eval.py
 ```
-
+After training is complete, run 
+```
+python3 robustness_eval.py
+```
 Results can be found in \\log\\cartpole\\Koopman\_meta\_deterministic directory.
 
 
