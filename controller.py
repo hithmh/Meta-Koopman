@@ -942,11 +942,7 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
         u = np.array(self.actions)[-1][:, np.newaxis]
 
         alpha = 1
-        term1 = 1/(mu.T @ mu +u.T @ u)
-        term2 = 1/(mu_.T @ mu_)
-        ## term takes the smaller value among the two
-        term = np.minimum(term1, term2)
-        lr = (2-alpha) * term * self.lr_scaler
+        lr = (2 - alpha) * np.min([1 / (mu.T @ mu + u.T @ u), 1 / (mu_.T @ mu_)]) * self.lr_scaler
 
 
         mu_hat = self.A @ mu + self.B @ u
@@ -1105,11 +1101,7 @@ class Adaptive_MPC_v2(Adaptive_MPC):
         v_k = sol.value(self.v_k)[: , np.newaxis]
 
         alpha = 1
-        term1 = 1/(mu.T @ mu +u.T @ u)
-        term2 = 1/(mu_.T @ mu_)
-        ## term takes the smaller value among the two
-        term = np.minimum(term1, term2)
-        lr = (2-alpha) * term * self.lr_scaler
+        lr = (2 - alpha) * np.min([1 / (mu.T @ mu + u.T @ u), 1 / (mu_.T @ mu_)]) * self.lr_scaler
 
         mu_hat = self.A @ mu + self.B @ u + w_k
         x_hat = self.C@(mu_) + v_k
