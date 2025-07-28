@@ -15,11 +15,11 @@ VARIANT = {
     # training prams
     # 'alg_name': 'DeSKO',
     # 'alg_name': 'DeSKO_meta',
-    # 'alg_name': 'Koopman_meta_deterministic_tanh', ## Meta Koopman with tanh normalization
-    'alg_name': 'Koopman_meta_deterministic', ## Meta Koopman
+    'alg_name': 'Koopman_meta_deterministic_tanh', ## Meta Koopman with tanh normalization
+    # 'alg_name': 'Koopman_meta_deterministic', ## Meta Koopman
 
     #Description
-    'additional_description': '',
+    'additional_description': '-scale=10',
 
     'train_model': True,
     'continue_training': False,
@@ -165,7 +165,7 @@ ALG_PARAMS = {
         'learning_rate': 5e-5,
         'decay_rate': 0.95,
         'decay_steps': 5,
-        'std_scaler': 5,
+        'std_scaler': 10,
 
         'activation': 'relu',
         'encoder_struct': [128, 128],
