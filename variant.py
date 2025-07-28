@@ -15,11 +15,11 @@ VARIANT = {
     # training prams
     # 'alg_name': 'DeSKO',
     # 'alg_name': 'DeSKO_meta',
-    'alg_name': 'Koopman_meta_deterministic_tanh', ## Meta Koopman with tanh normalization
-    # 'alg_name': 'Koopman_meta_deterministic', ## Meta Koopman
+    # 'alg_name': 'Koopman_meta_deterministic_tanh', ## Meta Koopman with tanh normalization
+    'alg_name': 'Koopman_meta_deterministic', ## Meta Koopman
 
     #Description
-    'additional_description': '-scale=10',
+    'additional_description': '',
 
     'train_model': True,
     'continue_training': False,

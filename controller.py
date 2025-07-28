@@ -928,8 +928,8 @@ class Adaptive_MPC(Stochastic_MPC_with_observation_v2):
 
             g_k = self.A_holder @ g_k + self.B_holder @ self.u[:, k_u]
             if args['apply_action_constraints']:
-                constraints += [self.a_bound_low <= self.u[:, 0],
-                                self.u[:, 0] <= self.a_bound_high]
+                constraints += [self.a_bound_low <= self.u[:, k_u],
+                                self.u[:, k_u] <= self.a_bound_high]
         xk = self.C_holder @ g_k
         constraints += [self.ref == xk]
         self.prob = Problem(Minimize(objective), constraints)
@@ -1147,8 +1147,8 @@ class Adaptive_MPC_v3(Adaptive_MPC_v2):
 
             g_k = self.A_holder @ g_k + self.B_holder @ self.u[:, k_u]
             if args['apply_action_constraints']:
-                constraints += [self.a_bound_low <= self.u[:, 0],
-                                self.u[:, 0] <= self.a_bound_high]
+                constraints += [self.a_bound_low <= self.u[:, k_u],
+                                self.u[:, k_u] <= self.a_bound_high]
 
         xk = self.C_holder @ g_k
         constraints += [self.ref == xk]
