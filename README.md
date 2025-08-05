@@ -1,3 +1,5 @@
+This is the repository for recreating the results of the paper "MAKO: Meta-Adaptive Koopman Operators for Learning-based Model Predictive Control of Parametrically Uncertain Nonlinear Systems", authored by Minghao Han, Kiwan Wong, Adrian Wing-Keung Law, and Xunyuan Yin.
+
 ## Setup environment
 
 From the general python package sanity perspective, it is a good idea to use conda environments to make sure packages from different projects do not interfere with each other.
