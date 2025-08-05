@@ -1,4 +1,4 @@
-This is the repository for recreating the results of the paper "MAKO: Meta-Adaptive Koopman Operators for Learning-based Model Predictive Control of Parametrically Uncertain Nonlinear Systems", authored by Minghao Han, Kiwan Wong, Adrian Wing-Keung Law, and Xunyuan Yin.
+This is the repository for recreating the results of the paper "**MAKO: Meta-Adaptive Koopman Operators for Learning-based Model Predictive Control of Parametrically Uncertain Nonlinear Systems**", authored by **Minghao Han**, **Kiwan Wong**, **Adrian Wing-Keung Law**, and **Xunyuan Yin**.
 
 ## Setup environment
 
